@@ -279,6 +279,8 @@ public static class ExcelHelper
         int summaryRow = lastDataRow + 1;
         SetCell(ws, summaryRow, "P", null, $"SUM(P9:P{lastDataRow})", sP);
 
+        // 保存前重算所有公式并写入缓存值，避免 WPS/Excel 打开时公式不计算（需双击单元格才显示）
+        wb.RecalculateAllFormulas();
         wb.SaveAs(outputPath);
     }
 
