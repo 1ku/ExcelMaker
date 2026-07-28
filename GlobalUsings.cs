@@ -1,0 +1,12 @@
+global using CommunityToolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm.Input;
+global using Serilog;
+global using System.Collections.ObjectModel;
+global using System.Globalization;
+global using System.IO;
+global using System.Windows;
+global using Microsoft.Extensions.DependencyInjection;
+global using ExcelMaker.Services;
+global using ExcelMaker.Helpers;
+global using ClosedXML.Excel;
+global using Oracle.ManagedDataAccess.Client;

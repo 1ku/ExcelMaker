@@ -1,0 +1,10 @@
+## .NET / WPF
+bin/
+obj/
+*.user
+.vs/
+
+## 本地配置（含密文，勿提交）
+D:\ExcelMaker\
+*.dat
+logs/
