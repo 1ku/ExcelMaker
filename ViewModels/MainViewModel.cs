@@ -36,7 +36,7 @@ public partial class MainViewModel : ObservableObject
         var dlg = new OpenFileDialog
         {
             Title = "选择库位名称 Excel",
-            Filter = "Excel 文件|*.xlsx;*.xls|所有文件|*.*"
+            Filter = "Excel 工作簿|*.xlsx|所有文件|*.*"
         };
         if (dlg.ShowDialog() != true) return;
 
@@ -77,7 +77,7 @@ public partial class MainViewModel : ObservableObject
         var openDlg = new OpenFileDialog
         {
             Title = "选择库存明细 Excel（A 表）",
-            Filter = "Excel 文件|*.xlsx;*.xls|所有文件|*.*"
+            Filter = "Excel 工作簿|*.xlsx|所有文件|*.*"
         };
         if (openDlg.ShowDialog() != true) return;
 

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 
 namespace ExcelMaker.Helpers;
 
@@ -25,10 +26,38 @@ public static class ExcelHelper
     /// </summary>
     public static List<StockNameRow> ReadStockNameSheet(string path)
     {
-        using var wb = new XLWorkbook(path);
-        var ws = wb.Worksheets.Worksheet(1);
-        var lastRowRange = ws.LastRowUsed();
-        var lastRow = lastRowRange == null ? 0 : lastRowRange.RowNumber();
+        // 先判空：path 为 null/空时 new XLWorkbook(null) 会抛 ArgumentNullException（表现为“报错 null”）
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("未提供 Excel 文件路径（path 为空），无法读取。请确认调用时传入了有效的文件完整路径。", nameof(path));
+
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"未找到 Excel 文件：{path}", path);
+
+        // ClosedXML 仅支持 .xlsx（Open XML）；旧版 .xls 无法读取，会表现为工作簿为空/抛异常
+        if (Path.GetExtension(path).Equals(".xls", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("不支持旧版 .xls 格式，请用 Excel 另存为 .xlsx 后再导入（ClosedXML 仅支持 .xlsx）");
+
+        XLWorkbook wb;
+        try
+        {
+            wb = new XLWorkbook(path);
+        }
+        catch (Exception ex)
+        {
+            // 把格式不符/文件损坏等底层异常转成清晰中文提示（包含原始信息便于排查）
+            throw new InvalidOperationException($"打开 Excel 失败，请确认文件是 .xlsx 格式且未损坏：{ex.Message}", ex);
+        }
+
+        using (wb)
+        {
+            if (wb.Worksheets.Count == 0)
+                throw new InvalidOperationException("工作簿中没有任何工作表（请确认文件是 .xlsx 格式，且未被损坏）");
+
+            var ws = wb.Worksheets.Worksheet(1);
+            var lastRowRange = ws.LastRowUsed();
+            var lastRow = lastRowRange == null ? 0 : lastRowRange.RowNumber();
+            if (lastRow == 0)
+                throw new InvalidOperationException("第一个工作表没有任何数据行（请确认数据在第一个工作表，且表头/数据未被清空）");
 
         // 1) 找到表头行
         int headerRow = -1;
@@ -65,6 +94,7 @@ public static class ExcelHelper
             rows.Add(row);
         }
         return rows;
+        }
     }
 
     #endregion
@@ -79,10 +109,37 @@ public static class ExcelHelper
     /// </summary>
     public static List<Dictionary<string, string>> ReadInventorySheet(string path)
     {
-        using var wb = new XLWorkbook(path);
-        var ws = wb.Worksheets.Worksheet(1);
-        var lastRowRange2 = ws.LastRowUsed();
-        var lastRow = lastRowRange2 == null ? 0 : lastRowRange2.RowNumber();
+        // 先判空：path 为 null/空时 new XLWorkbook(null) 会抛 ArgumentNullException（表现为“报错 null”）
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("未提供 Excel 文件路径（path 为空），无法读取。请确认调用时传入了有效的文件完整路径。", nameof(path));
+
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"未找到 Excel 文件：{path}", path);
+
+        // ClosedXML 仅支持 .xlsx；旧版 .xls 无法读取，会表现为工作簿为空/抛异常
+        if (Path.GetExtension(path).Equals(".xls", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("不支持旧版 .xls 格式，请用 Excel 另存为 .xlsx 后再导入（ClosedXML 仅支持 .xlsx）");
+
+        XLWorkbook wb;
+        try
+        {
+            wb = new XLWorkbook(path);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"打开 Excel 失败，请确认文件是 .xlsx 格式且未损坏：{ex.Message}", ex);
+        }
+
+        using (wb)
+        {
+            if (wb.Worksheets.Count == 0)
+                throw new InvalidOperationException("工作簿中没有任何工作表（请确认文件是 .xlsx 格式，且未被损坏）");
+
+            var ws = wb.Worksheets.Worksheet(1);
+            var lastRowRange2 = ws.LastRowUsed();
+            var lastRow = lastRowRange2 == null ? 0 : lastRowRange2.RowNumber();
+            if (lastRow < 2)
+                throw new InvalidOperationException("第一个工作表没有足够的数据行（A 表表头应在第1行，数据从第2行起）");
 
         var rows = new List<Dictionary<string, string>>();
         for (int r = 2; r <= lastRow; r++)
@@ -99,6 +156,7 @@ public static class ExcelHelper
             rows.Add(dict);
         }
         return rows;
+        }
     }
 
     /// <summary>

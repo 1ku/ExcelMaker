@@ -23,6 +23,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
     <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <!-- ClosedXML 0.104.2 编译时精确依赖 SixLabors.Fonts 1.0.0；
+         若被更高版本（如 2.x，GlyphMetrics 结构体布局不同）顶替，会在 new XLWorkbook 时抛
+         TypeLoadException（Could not load type 'SixLabors.Fonts.GlyphMetrics' … value type mismatch）。
+         显式钉死 1.0.0 避免版本冲突。 -->
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
