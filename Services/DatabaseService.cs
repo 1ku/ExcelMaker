@@ -91,7 +91,8 @@ WHEN NOT MATCHED THEN
         await using var conn = await OpenConnectionAsync();
         using var tx = conn.BeginTransaction();
 
-        await using var cmd = new OracleCommand(mergeSql, conn, tx);
+        await using var cmd = new OracleCommand(mergeSql, conn);
+        cmd.Transaction = tx;
         cmd.BindByName = true;
         cmd.Parameters.Add(new OracleParameter("p_fc", OracleDbType.Varchar2));
         cmd.Parameters.Add(new OracleParameter("p_sp", OracleDbType.Varchar2));
