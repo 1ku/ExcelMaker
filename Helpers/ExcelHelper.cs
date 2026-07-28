@@ -27,15 +27,18 @@ public static class ExcelHelper
     {
         using var wb = new XLWorkbook(path);
         var ws = wb.Worksheets.Worksheet(1);
-        var lastRow = ws.LastRowUsed()?.RowNumber ?? 0;
+        var lastRowRange = ws.LastRowUsed();
+        var lastRow = lastRowRange == null ? 0 : lastRowRange.RowNumber;
 
         // 1) 找到表头行
         int headerRow = -1;
         Dictionary<string, int>? columnMap = null;
+        var lastCellUsed = ws.LastCellUsed();
+        int lastCol = lastCellUsed == null ? 50 : lastCellUsed.Address.ColumnNumber;
         for (int r = 1; r <= Math.Min(lastRow, 100); r++)
         {
             var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            for (int c = 1; c <= ws.LastCellUsed()?.Address.ColumnNumber ?? 50; c++)
+            for (int c = 1; c <= lastCol; c++)
             {
                 var text = ws.Cell(r, c).GetString().Trim();
                 if (StockNameMap.ContainsKey(text))
@@ -78,7 +81,8 @@ public static class ExcelHelper
     {
         using var wb = new XLWorkbook(path);
         var ws = wb.Worksheets.Worksheet(1);
-        var lastRow = ws.LastRowUsed()?.RowNumber ?? 0;
+        var lastRowRange2 = ws.LastRowUsed();
+        var lastRow = lastRowRange2 == null ? 0 : lastRowRange2.RowNumber;
 
         var rows = new List<Dictionary<string, string>>();
         for (int r = 2; r <= lastRow; r++)
