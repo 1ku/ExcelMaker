@@ -186,15 +186,15 @@ public static class ExcelHelper
         var sK = Style(11, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, null, true);
         var sL = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, "#,##0.00", true);
         var sM = sC;
-        var sN = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, "¥#,##0.00", true);
-        var sO = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, "¥#,##0.00", true);
+        var sN = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, "_ * #,##0.00_ ;_ * (#,##0.00)_ ;_ * \"-\"??_ ;_ @_", true);
+        var sO = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, "_ * #,##0.00_ ;_ * (#,##0.00)_ ;_ * \"-\"??_ ;_ @_", true);
         var sP = sO; var sQ = sO; var sR = sO; var sS = sO; var sT = sO;
         var sU = Style(9, XLAlignmentVerticalValues.Bottom, null, "#,##0.00", true);
         var sV = sU;
         var sW = Style(9, XLAlignmentVerticalValues.Bottom, XLAlignmentHorizontalValues.Left, "#,##0.00", true);
         var sX = sW; var sY = sW; var sZ = sW; var sAA = sW; var sAB = sW;
         var sAC = sU; var sAD = sU;
-        var sAE = Style(9, XLAlignmentVerticalValues.Bottom, null, "¥#,##0.00", true);
+        var sAE = Style(9, XLAlignmentVerticalValues.Bottom, null, "_ * #,##0.00_ ;_ * (#,##0.00)_ ;_ * \"-\"??_ ;_ @_", true);
 
         for (int k = 0; k < aRows.Count; k++)
         {
