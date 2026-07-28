@@ -249,7 +249,7 @@ public static class ExcelHelper
         if (s.Vertical.HasValue) cell.Style.Alignment.Vertical = s.Vertical.Value;
         if (s.Horizontal.HasValue) cell.Style.Alignment.Horizontal = s.Horizontal.Value;
         if (s.NumberFormat != null) cell.Style.NumberFormat.Format = s.NumberFormat;
-        if (s.BorderAll) cell.Style.Border.SetAllBorders(XLBorderStyleValues.Thin);
+        if (s.BorderAll) cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
         if (formula != null)
         {
