@@ -279,8 +279,9 @@ public static class ExcelHelper
         int summaryRow = lastDataRow + 1;
         SetCell(ws, summaryRow, "P", null, $"SUM(P9:P{lastDataRow})", sP);
 
-        // 保存前重算所有公式并写入缓存值，避免 WPS/Excel 打开时公式不计算（需双击单元格才显示）
-        wb.RecalculateAllFormulas();
+        // 强制 WPS/Excel 打开时整表重算：ClosedXML 0.104.2 计算引擎不写公式缓存值，
+        // 文件里只有 <f> 无 <v>，查看器不自动重算就会显示空白（需双击单元格才出值）
+        wb.FullCalculationOnLoad = true;
         wb.SaveAs(outputPath);
     }
 
