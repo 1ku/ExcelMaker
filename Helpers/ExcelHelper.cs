@@ -28,7 +28,7 @@ public static class ExcelHelper
         using var wb = new XLWorkbook(path);
         var ws = wb.Worksheets.Worksheet(1);
         var lastRowRange = ws.LastRowUsed();
-        var lastRow = lastRowRange == null ? 0 : lastRowRange.RowNumber;
+        var lastRow = lastRowRange == null ? 0 : lastRowRange.RowNumber();
 
         // 1) 找到表头行
         int headerRow = -1;
@@ -82,7 +82,7 @@ public static class ExcelHelper
         using var wb = new XLWorkbook(path);
         var ws = wb.Worksheets.Worksheet(1);
         var lastRowRange2 = ws.LastRowUsed();
-        var lastRow = lastRowRange2 == null ? 0 : lastRowRange2.RowNumber;
+        var lastRow = lastRowRange2 == null ? 0 : lastRowRange2.RowNumber();
 
         var rows = new List<Dictionary<string, string>>();
         for (int r = 2; r <= lastRow; r++)
