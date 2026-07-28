@@ -253,7 +253,7 @@ public static class ExcelHelper
 
         if (formula != null)
         {
-            cell.FormulaA = formula;
+            cell.FormulaA1 = formula;
         }
         else if (!string.IsNullOrEmpty(value))
         {
