@@ -186,15 +186,15 @@ public static class ExcelHelper
         var sK = Style(11, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, null, true);
         var sL = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, "#,##0.00", true);
         var sM = sC;
-        var sN = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, "_ * #,##0.00_ ;_ * (#,##0.00)_ ;_ * \"-\"??_ ;_ @_", true);
-        var sO = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, "_ * #,##0.00_ ;_ * (#,##0.00)_ ;_ * \"-\"??_ ;_ @_", true);
+        var sN = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, null, true, 39); // 39=会计专用/无货币符号/2位小数
+        var sO = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, null, true, 39); // 39=会计专用/无货币符号/2位小数
         var sP = sO; var sQ = sO; var sR = sO; var sS = sO; var sT = sO;
         var sU = Style(9, XLAlignmentVerticalValues.Bottom, null, "#,##0.00", true);
         var sV = sU;
         var sW = Style(9, XLAlignmentVerticalValues.Bottom, XLAlignmentHorizontalValues.Left, "#,##0.00", true);
         var sX = sW; var sY = sW; var sZ = sW; var sAA = sW; var sAB = sW;
         var sAC = sU; var sAD = sU;
-        var sAE = Style(9, XLAlignmentVerticalValues.Bottom, null, "_ * #,##0.00_ ;_ * (#,##0.00)_ ;_ * \"-\"??_ ;_ @_", true);
+        var sAE = Style(9, XLAlignmentVerticalValues.Bottom, null, null, true, 39); // 39=会计专用/无货币符号/2位小数
 
         for (int k = 0; k < aRows.Count; k++)
         {
@@ -305,8 +305,8 @@ public static class ExcelHelper
 
     #region 内部工具
 
-    private static ColumnStyle Style(int fontSize, XLAlignmentVerticalValues? v, XLAlignmentHorizontalValues? h, string? fmt, bool border)
-        => new() { FontSize = fontSize, Vertical = v, Horizontal = h, NumberFormat = fmt, BorderAll = border };
+    private static ColumnStyle Style(int fontSize, XLAlignmentVerticalValues? v, XLAlignmentHorizontalValues? h, string? fmt = null, bool border = false, int? numberFormatId = null)
+        => new() { FontSize = fontSize, Vertical = v, Horizontal = h, NumberFormat = fmt, BorderAll = border, NumberFormatId = numberFormatId };
 
     private sealed class ColumnStyle
     {
@@ -315,6 +315,7 @@ public static class ExcelHelper
         public XLAlignmentVerticalValues? Vertical;
         public XLAlignmentHorizontalValues? Horizontal;
         public string? NumberFormat; // null = 常规
+        public int? NumberFormatId;  // 内置格式 ID（如 39=会计专用/无货币符号/2位小数）；非空时优先于 NumberFormat，写入内置 ID 让 WPS 识别为对应分类而非“自定义”
         public bool BorderAll;
     }
 
@@ -337,7 +338,10 @@ public static class ExcelHelper
         cell.Style.Font.FontSize = s.FontSize;
         if (s.Vertical.HasValue) cell.Style.Alignment.Vertical = s.Vertical.Value;
         if (s.Horizontal.HasValue) cell.Style.Alignment.Horizontal = s.Horizontal.Value;
-        if (s.NumberFormat != null) cell.Style.NumberFormat.Format = s.NumberFormat;
+        if (s.NumberFormatId.HasValue)
+            cell.Style.NumberFormat.SetNumberFormatId(s.NumberFormatId.Value);
+        else if (s.NumberFormat != null)
+            cell.Style.NumberFormat.Format = s.NumberFormat;
         if (s.BorderAll) cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
         if (formula != null)
