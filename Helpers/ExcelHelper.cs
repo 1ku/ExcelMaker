@@ -274,10 +274,26 @@ public static class ExcelHelper
             SetCell(ws, bRow, "AE", null, null, sAE);
         }
 
-        // 汇总行：P 列 = SUM(P9:P{末数据行})
-        int lastDataRow = 8 + aRows.Count;   // 第9行起，共 aRows.Count 行
+        // 汇总行：第9行起共 aRows.Count 行，汇总行在其下一行
+        int lastDataRow = 8 + aRows.Count;
         int summaryRow = lastDataRow + 1;
-        SetCell(ws, summaryRow, "P", null, $"SUM(P9:P{lastDataRow})", sP);
+
+        // 列样式按 A~AE 顺序，供汇总行套用（仅样式/框线，不写数据）
+        ColumnStyle[] colStyles =
+        {
+            sA, sB, sC, sD, sE, sF, sG, sH, sI, sJ, sK, sL, sM,
+            sN, sO, sP, sQ, sR, sS, sT, sU, sV, sW, sX, sY, sZ,
+            sAA, sAB, sAC, sAD, sAE
+        };
+        // 汇总行：B~AE（除 A 列）套用与数据行一致的样式（含所有框线）；P 列写合计公式
+        for (int c = 2; c <= 31; c++)
+        {
+            string col = ColLetter(c);
+            if (c == 16) // P 列 = 第16列
+                SetCell(ws, summaryRow, col, null, $"SUM(P9:P{lastDataRow})", colStyles[c - 1]);
+            else
+                SetCell(ws, summaryRow, col, null, null, colStyles[c - 1]);
+        }
 
         // 强制 WPS/Excel 打开时整表重算：ClosedXML 0.104.2 计算引擎不写公式缓存值，
         // 文件里只有 <f> 无 <v>，查看器不自动重算就会显示空白（需双击单元格才出值）
@@ -300,6 +316,18 @@ public static class ExcelHelper
         public XLAlignmentHorizontalValues? Horizontal;
         public string? NumberFormat; // null = 常规
         public bool BorderAll;
+    }
+
+    private static string ColLetter(int n)
+    {
+        var s = "";
+        while (n > 0)
+        {
+            int m = (n - 1) % 26;
+            s = (char)('A' + m) + s;
+            n = (n - 1) / 26;
+        }
+        return s;
     }
 
     private static void SetCell(IXLWorksheet ws, int row, string col, string? value, string? formula, ColumnStyle s)
