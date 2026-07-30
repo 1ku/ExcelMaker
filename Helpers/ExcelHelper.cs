@@ -102,7 +102,7 @@ public static class ExcelHelper
     #region 功能3：库存明细（A 表读取 + B 表生成）
 
     // A 表需要读取的列（字母）
-    private static readonly string[] InventoryColumns = { "B", "D", "E", "F", "G", "H", "K", "L", "M", "N", "R" };
+    private static readonly string[] InventoryColumns = { "B", "D", "E", "F", "G", "H", "K", "L", "M", "N", "R", "S" };
 
     /// <summary>
     /// 读取 A 表第一个工作表（表头第1行，内容第2行起），返回每行按列字母索引的值。
@@ -175,6 +175,11 @@ public static class ExcelHelper
         using var wb = new XLWorkbook(templatePath);
         var ws = wb.Worksheets.Worksheet(1);
 
+        // 从模板预留单元格读取会计专用数字格式（用户在 WPS 中设置，确保被识别为“会计专用”而非“自定义”）。
+        // AK2：零值显示 “-”；AK3：零值显示空白。仅复制其 NumberFormatId，原样继承模板中的 numFmt 定义。
+        var ak2 = ToStyleArgs(ReadNumberFormat(ws, "AK2"));
+        var ak3 = ToStyleArgs(ReadNumberFormat(ws, "AK3"));
+
         // 列样式定义（微软雅黑，按需求逐项设置，未指定的属性保持默认）
         var sA = Style(9, XLAlignmentVerticalValues.Center, null, null, false);
         var sB = Style(9, XLAlignmentVerticalValues.Bottom, XLAlignmentHorizontalValues.Center, null, true);
@@ -186,15 +191,15 @@ public static class ExcelHelper
         var sK = Style(11, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, null, true);
         var sL = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, "#,##0.00", true);
         var sM = sC;
-        var sN = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, null, true, 39); // 39=会计专用/无货币符号/2位小数
-        var sO = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, null, true, 39); // 39=会计专用/无货币符号/2位小数
+        var sN = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Center, ak2.Fmt, true, ak2.Id); // 会计专用（继承 AK2：零值显示-）
+        var sO = Style(9, XLAlignmentVerticalValues.Center, XLAlignmentHorizontalValues.Left, ak2.Fmt, true, ak2.Id);   // 会计专用（继承 AK2：零值显示-）
         var sP = sO; var sQ = sO; var sR = sO; var sS = sO; var sT = sO;
         var sU = Style(9, XLAlignmentVerticalValues.Bottom, null, "#,##0.00", true);
         var sV = sU;
         var sW = Style(9, XLAlignmentVerticalValues.Bottom, XLAlignmentHorizontalValues.Left, "#,##0.00", true);
         var sX = sW; var sY = sW; var sZ = sW; var sAA = sW; var sAB = sW;
         var sAC = sU; var sAD = sU;
-        var sAE = Style(9, XLAlignmentVerticalValues.Bottom, null, null, true, 39); // 39=会计专用/无货币符号/2位小数
+        var sAE = Style(9, XLAlignmentVerticalValues.Bottom, null, ak3.Fmt, true, ak3.Id); // 会计专用（继承 AK3：零值显示空）
 
         for (int k = 0; k < aRows.Count; k++)
         {
@@ -240,16 +245,16 @@ public static class ExcelHelper
             SetCell(ws, bRow, "N", null, $"P{bRow}/O{bRow}", sN);
             // O: = A表R列
             SetCell(ws, bRow, "O", Get("R"), null, sO);
-            // P: 空（会计专用）
-            SetCell(ws, bRow, "P", null, null, sP);
+            // P: = A表S列
+            SetCell(ws, bRow, "P", Get("S"), null, sP);
             // Q: = A表R列
             SetCell(ws, bRow, "Q", Get("R"), null, sQ);
-            // R: 空
-            SetCell(ws, bRow, "R", null, null, sR);
+            // R: = A表S列
+            SetCell(ws, bRow, "R", Get("S"), null, sR);
             // S: = A表R列
             SetCell(ws, bRow, "S", Get("R"), null, sS);
-            // T: 空
-            SetCell(ws, bRow, "T", null, null, sT);
+            // T: = A表S列
+            SetCell(ws, bRow, "T", Get("S"), null, sT);
             // U: 空（数值）
             SetCell(ws, bRow, "U", null, null, sU);
             // V: 空（数值）
@@ -329,6 +334,22 @@ public static class ExcelHelper
             n = (n - 1) / 26;
         }
         return s;
+    }
+
+    // 从模板单元格读取数字格式。内置/模板格式以 NumberFormatId 表示；自定义串时 NumberFormatId 为 -1。
+    private static (int Id, string Fmt) ReadNumberFormat(IXLWorksheet ws, string cellRef)
+    {
+        var nf = ws.Cell(cellRef).Style.NumberFormat;
+        return (nf.NumberFormatId, nf.Format ?? "");
+    }
+
+    // 将读取到的格式转为 Style 参数：优先原样套用 NumberFormatId（保证与 AK2/AK3 完全一致）；
+    // 仅当为自定义串（Id<=0 但有 Format）时回退到 Format；都为空时回退内置 39（会计专用/无符号/2位小数）。
+    private static (string? Fmt, int? Id) ToStyleArgs((int Id, string Fmt) preset)
+    {
+        if (preset.Id > 0) return (null, preset.Id);
+        if (!string.IsNullOrEmpty(preset.Fmt)) return (preset.Fmt, null);
+        return (null, 39);
     }
 
     private static void SetCell(IXLWorksheet ws, int row, string col, string? value, string? formula, ColumnStyle s)
